@@ -1,39 +1,46 @@
-// Pulling ALL Earthquake data from last 30 days (from 5/23/19)
-var earthquakeUrl = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_month.geojson"
+// Previous Month
+var earthquakeMo = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_month.geojson"
+
+// Previous Week
+var earthquakeWk = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson"
+
+// Fault-line boundaries
 var boundariesSrc = "boundaries.json"
 
-// var layer = L.tileLayer('http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
-//   attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="http://cartodb.com/attributions">CartoDB</a>'
+// var ca_cities = d3.json(earthquakeWk, function(data) {
+//   console.log(data)
+//   var count = Object.keys(ca_cities).length;
+//   console.log(count);
 // });
 
-// var map = L.map('map').setView([36.65079252503468, -119.15771484375], 6);
 
-// map.addLayer(layer);
+// Create the map with our layers
+// var map = L.map("map", {
+//   center: [18.4861, -69.9312],
+//   zoom: 2.5
+//   // layers: [
+//   //   layers.lightmap
+//     // layers.COMING_SOON,
+//     // layers.EMPTY,
+//     // layers.LOW,
+//     // layers.NORMAL,
+//     // layers.OUT_OF_ORDER
+//   ]
+// });
 
-// // Pass Leaflet.bubble as GeoJSON object and amount property to visualize
-// bubbles = L.bubbleLayer(ca_cities, {
-//   property: 'mag',
-//   legend: true,
-//   max_radius : 40,
-//   scale: 'YlGnBu',
-//   tooltip : true
-// })
 
-// bubbles.addTo(map);
-
-// Library removes the bubble using the removeLayer function: map.removeLayer(bubbles)
-
+// Initialize Map
+var map = L.map('map').setView([36.65079252503468, -119.15771484375], 6);
 
 
 // Create the tile layer that will be the background of our map
-var satellite = L.tileLayer("https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token={accessToken}", {
-  attribution: "Map data &copy; <a href=\"http://openstreetmap.org\">OpenStreetMap</a> contributors, <a href=\"http://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery © <a href=\"http://mapbox.com\">Mapbox</a>",
+var darkmap = L.tileLayer("https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}", {
+  attribution: "Map data &copy; <a href=\"https://www.openstreetmap.org/\">OpenStreetMap</a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery © <a href=\"https://www.mapbox.com/\">Mapbox</a>",
   maxZoom: 18,
-  id: "mapbox.satellite",
+  id: "mapbox.dark",
   accessToken: API_KEY
 });
 
-// Create the tile layer that will be the background of our map
 var lightmap = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/light-v9/tiles/256/{z}/{x}/{y}?access_token={accessToken}", {
   attribution: "Map data &copy; <a href=\"http://openstreetmap.org\">OpenStreetMap</a> contributors, <a href=\"http://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery © <a href=\"http://mapbox.com\">Mapbox</a>",
   maxZoom: 18,
@@ -41,18 +48,28 @@ var lightmap = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/light-v9/til
   accessToken: API_KEY
 });
 
-// Pass Leaflet.bubble as GeoJSON object and amount property to visualize
-bubbles = L.bubbleLayer(ca_cities, {
-  property: 'population',
+// Create the tile layer for satellite view
+var satellite = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v9/tiles/256/{z}/{x}/{y}?access_token={accessToken}" , {
+  attribution: "Map data &copy; <a href=\"http://openstreetmap.org\">OpenStreetMap</a> contributors, <a href=\"http://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery © <a href=\"http://mapbox.com\">Mapbox</a>",
+  maxZoom: 18,
+  id: "mapbox.satellite-streets",
+  accessToken: API_KEY
+});
+
+// Create layer for bubble layer, displaying Magnitude data
+var bubbles = L.bubbleLayer(ca_cities, {
+  property: 'mag',
   legend: true,
   max_radius : 40,
   scale: 'YlGnBu',
   tooltip : true
 })
 
-// bubbles.addTo(map);
+
+map.addLayer(darkmap);
 
 
+bubbles.addTo(map);
 
 // Initialize all of the LayerGroups we'll be using
 var layers = {
@@ -63,24 +80,28 @@ var layers = {
   // OUT_OF_ORDER: new L.LayerGroup()
 };
 
-// Create the map with our layers
-var map = L.map("map", {
-  center: [18.4861, -69.9312],
-  zoom: 2.5,
-  layers: [
-    layers.lightmap
-    // layers.COMING_SOON,
-    // layers.EMPTY,
-    // layers.LOW,
-    // layers.NORMAL,
-    // layers.OUT_OF_ORDER
-  ]
-});
 
-// Add our 'lightmap' tile layer to the map
-lightmap.addTo(map);
+var mapIndex = {
+  "Dark": darkmap,
+  "Light": lightmap,
+  "Satellite": satellite
+};
 
+// Create the control and add it to the map;
+var control = L.control.layers(mapIndex);
+control.addTo(map);
 
+// Call the getContainer routine.
+var htmlObject = control.getContainer();
+// Get the desired parent node.
+var a = document.getElementById('new-parent');
+
+// Finally append that node to the new parent.
+function setParent(el, newParent)
+{
+    newParent.appendChild(el);
+}
+setParent(htmlObject, a);
 
 
 
