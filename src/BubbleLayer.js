@@ -186,10 +186,10 @@ L.BubbleLayer = (L.Layer ? L.Layer : L.Class).extend({
       return div;
 
 
-    };
+    },
 
     // Add this one (only) for now, as the Population layer is on by default
-    legend.addTo(map);
+    //legend.addTo(map);
   },
 
   showTooltip: function(layer){

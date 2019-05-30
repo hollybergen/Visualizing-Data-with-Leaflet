@@ -74,6 +74,17 @@ var overlayMaps = {
 
 L.control.layers(baseMaps, overlayMaps).addTo(map);
 
+
+
+
+
+
+
+
+
+
+
+
 // map.on('overlayadd', function (eventLayer) {
 //   // Switch to the Permafrost legend...
 //   if (eventLayer.name === 'Magnitude') {
