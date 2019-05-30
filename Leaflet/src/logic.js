@@ -1,39 +1,8 @@
-// Previous Month
-var earthquakeMo = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_month.geojson"
-
-// Previous Week
-var earthquakeWk = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson"
-
-// Fault-line boundaries
-var boundariesSrc = "boundaries.json"
-
-// var ca_cities = d3.json(earthquakeWk, function(data) {
-//   console.log(data)
-//   var count = Object.keys(ca_cities).length;
-//   console.log(count);
-// });
-
-
-// Create the map with our layers
-// var map = L.map("map", {
-//   center: [18.4861, -69.9312],
-//   zoom: 2.5
-//   // layers: [
-//   //   layers.lightmap
-//     // layers.COMING_SOON,
-//     // layers.EMPTY,
-//     // layers.LOW,
-//     // layers.NORMAL,
-//     // layers.OUT_OF_ORDER
-//   ]
-// });
-
-
 // Initialize Map
 var map = L.map('map').setView([36.65079252503468, -119.15771484375], 6);
 
 
-// Create the tile layer that will be the background of our map
+// Create Tile layers for Base Layers
 var darkmap = L.tileLayer("https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}", {
   attribution: "Map data &copy; <a href=\"https://www.openstreetmap.org/\">OpenStreetMap</a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery © <a href=\"https://www.mapbox.com/\">Mapbox</a>",
   maxZoom: 18,
@@ -48,7 +17,6 @@ var lightmap = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/light-v9/til
   accessToken: API_KEY
 });
 
-// Create the tile layer for satellite view
 var satellite = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v9/tiles/256/{z}/{x}/{y}?access_token={accessToken}" , {
   attribution: "Map data &copy; <a href=\"http://openstreetmap.org\">OpenStreetMap</a> contributors, <a href=\"http://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery © <a href=\"http://mapbox.com\">Mapbox</a>",
   maxZoom: 18,
@@ -56,7 +24,7 @@ var satellite = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/satellite-s
   accessToken: API_KEY
 });
 
-// Create layer for bubble layer, displaying Magnitude data
+// Create bubble layer, displaying Magnitude data
 var bubbles = L.bubbleLayer(ca_cities, {
   property: 'mag',
   legend: true,
@@ -66,184 +34,79 @@ var bubbles = L.bubbleLayer(ca_cities, {
 })
 
 
-map.addLayer(darkmap);
-
-
-bubbles.addTo(map);
-
-// Initialize all of the LayerGroups we'll be using
-var layers = {
-  lightmap: new L.LayerGroup()
-  // EMPTY: new L.LayerGroup(),
-  // LOW: new L.LayerGroup(),
-  // NORMAL: new L.LayerGroup(),
-  // OUT_OF_ORDER: new L.LayerGroup()
+// Function creates plates dict with key as plate name and value as random color
+function getNames(data) {
+  var plates = {};
+  var result = data.features;
+  for (var i = 0; i < result.length; i++) {
+    plates[result[i].properties.PlateA] = '#'+(Math.random()*0xFFFFFF<<0).toString(16);
+  }
+  return plates;
 };
 
+// Create boundaries layer with random colors function displaying Fault line data
+var plates_colors = getNames(boundary_lines);
+var boundaries = L.geoJSON(boundary_lines, {
+  "weight": 5,
+  "opacity": 0.8,
+  style: function(features) {
+    console.log("Plate = " + features.properties.PlateA);
+    return {"color": plates_colors[features.properties.PlateA]};
+  }
+});
 
-var mapIndex = {
+// Set Default map to dark & magnitude
+map.addLayer(darkmap);
+bubbles.addTo(map);
+
+
+// Establish params for container
+var baseMaps = {
   "Dark": darkmap,
   "Light": lightmap,
   "Satellite": satellite
 };
 
-// Create the control and add it to the map;
-var control = L.control.layers(mapIndex);
-control.addTo(map);
-
-// Call the getContainer routine.
-var htmlObject = control.getContainer();
-// Get the desired parent node.
-var a = document.getElementById('new-parent');
-
-// Finally append that node to the new parent.
-function setParent(el, newParent)
-{
-    newParent.appendChild(el);
+var overlayMaps = {
+  "Magnitude": bubbles,
+  "Fault Lines": boundaries
 }
-setParent(htmlObject, a);
 
+L.control.layers(baseMaps, overlayMaps).addTo(map);
 
-
-
-
-
-
-
-
-// // Create an overlays object to add to the layer control
-// var overlays = {
-//   "Coming Soon": layers.COMING_SOON,
-//   "Empty Stations": layers.EMPTY,
-//   "Low Stations": layers.LOW,
-//   "Healthy Stations": layers.NORMAL,
-//   "Out of Order": layers.OUT_OF_ORDER
-// };
-
-// // Create a control for our layers, add our overlay layers to it
-// L.control.layers(null, overlays).addTo(map);
-
-// // Create a legend to display information about our map
-// var info = L.control({
-//   position: "bottomright"
+// map.on('overlayadd', function (eventLayer) {
+//   // Switch to the Permafrost legend...
+//   if (eventLayer.name === 'Magnitude') {
+//       this.removeLayer(bubble);
+//       // legend2.addTo(this);
+//   // } else { // Or switch to the treeline legend...
+//   //     this.removeControl(legend2);
+//   //     legend1.addTo(this);
+//   // }
+//   };
 // });
 
-// // When the layer control is added, insert a div with the class of "legend"
-// info.onAdd = function() {
-//   var div = L.DomUtil.create("div", "legend");
-//   return div;
-// };
-// // Add the info legend to the map
-// //info.addTo(map);
+// var popuLegend = L.control(baseMaps, overlayMaps);
 
-// // Initialize an object containing icons for each layer group
-// var icons = {
-//   COMING_SOON: L.ExtraMarkers.icon({
-//     icon: "ion-settings",
-//     iconColor: "white",
-//     markerColor: "yellow",
-//     shape: "star"
-//   }),
-//   EMPTY: L.ExtraMarkers.icon({
-//     icon: "ion-android-bicycle",
-//     iconColor: "white",
-//     markerColor: "red",
-//     shape: "circle"
-//   }),
-//   OUT_OF_ORDER: L.ExtraMarkers.icon({
-//     icon: "ion-minus-circled",
-//     iconColor: "white",
-//     markerColor: "blue-dark",
-//     shape: "penta"
-//   }),
-//   LOW: L.ExtraMarkers.icon({
-//     icon: "ion-android-bicycle",
-//     iconColor: "white",
-//     markerColor: "orange",
-//     shape: "circle"
-//   }),
-//   NORMAL: L.ExtraMarkers.icon({
-//     icon: "ion-android-bicycle",
-//     iconColor: "white",
-//     markerColor: "green",
-//     shape: "circle"
-//   })
-// };
-
-// // Perform an API call to the Citi Bike Station Information endpoint
-// d3.json("https://gbfs.citibikenyc.com/gbfs/en/station_information.json", function(infoRes) {
-
-//   // When the first API call is complete, perform another call to the Citi Bike Station Status endpoint
-//   d3.json("https://gbfs.citibikenyc.com/gbfs/en/station_status.json", function(statusRes) {
-//     var updatedAt = infoRes.last_updated;
-//     var stationStatus = statusRes.data.stations;
-//     var stationInfo = infoRes.data.stations;
-
-//     // Create an object to keep of the number of markers in each layer
-//     var stationCount = {
-//       COMING_SOON: 0,
-//       EMPTY: 0,
-//       LOW: 0,
-//       NORMAL: 0,
-//       OUT_OF_ORDER: 0
-//     };
-
-//     // Initialize a stationStatusCode, which will be used as a key to access the appropriate layers, icons, and station count for layer group
-//     var stationStatusCode;
-
-//     // Loop through the stations (they're the same size and have partially matching data)
-//     for (var i = 0; i < stationInfo.length; i++) {
-
-//       // Create a new station object with properties of both station objects
-//       var station = Object.assign({}, stationInfo[i], stationStatus[i]);
-//       // If a station is listed but not installed, it's coming soon
-//       if (!station.is_installed) {
-//         stationStatusCode = "COMING_SOON";
-//       }
-//       // If a station has no bikes available, it's empty
-//       else if (!station.num_bikes_available) {
-//         stationStatusCode = "EMPTY";
-//       }
-//       // If a station is installed but isn't renting, it's out of order
-//       else if (station.is_installed && !station.is_renting) {
-//         stationStatusCode = "OUT_OF_ORDER";
-//       }
-//       // If a station has less than 5 bikes, it's status is low
-//       else if (station.num_bikes_available < 5) {
-//         stationStatusCode = "LOW";
-//       }
-//       // Otherwise the station is normal
-//       else {
-//         stationStatusCode = "NORMAL";
-//       }
-
-//       // Update the station count
-//       stationCount[stationStatusCode]++;
-//       // Create a new marker with the appropriate icon and coordinates
-//       var newMarker = L.marker([station.lat, station.lon], {
-//         icon: icons[stationStatusCode]
-//       });
-
-//       // Add the new marker to the appropriate layer
-//       newMarker.addTo(layers[stationStatusCode]);
-
-//       // Bind a popup to the marker that will  display on click. This will be rendered as HTML
-//       newMarker.bindPopup(station.name + "<br> Capacity: " + station.capacity + "<br>" + station.num_bikes_available + " Bikes Available");
-//     }
-
-//     // Call the updateLegend function, which will... update the legend!
-//     updateLegend(updatedAt, stationCount);
-//   });
+// map.on('overlayadd', function(eventLayer){
+//   if (eventLayer.name === 'Magnitude'){
+//       map.addControl(popuLegend);
+//       console.log("Add Control")
+//   } 
 // });
 
-// // Update the legend's innerHTML with the last updated time and station count
-// function updateLegend(time, stationCount) {
-//   document.querySelector(".legend").innerHTML = [
-//     "<p>Updated: " + moment.unix(time).format("h:mm:ss A") + "</p>",
-//     "<p class='out-of-order'>Out of Order Stations: " + stationCount.OUT_OF_ORDER + "</p>",
-//     "<p class='coming-soon'>Stations Coming Soon: " + stationCount.COMING_SOON + "</p>",
-//     "<p class='empty'>Empty Stations: " + stationCount.EMPTY + "</p>",
-//     "<p class='low'>Low Stations: " + stationCount.LOW + "</p>",
-//     "<p class='healthy'>Healthy Stations: " + stationCount.NORMAL + "</p>"
-//   ].join("");
-// }
+// var popuLegend = L.control(baseMaps, overlayMaps);
+
+// map.on('overlayremove', function(eventLayer){
+//   if (eventLayer.name === 'Magnitude'){
+//        map.removeControl(popuLegend);
+//        console.log("Remove Control")
+//       //  map.addLayer("Magnitude")
+//        map.removeLayer(bubbles);
+//       //  if (this.options.legend) {
+//       //    console.log("if remove");
+//       //   this.removeLayer(this._scale, this._max);
+//       //   }
+//       } 
+
+// });

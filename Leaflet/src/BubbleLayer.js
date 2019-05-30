@@ -2,12 +2,12 @@
 
 L.BubbleLayer = (L.Layer ? L.Layer : L.Class).extend({
   // options: {
-  //  property: REQUIRED
+  //  property: REQUIRED,
 
   //  legend : true,
   //  max_radius: 40,
   //  scale: <chroma-js color scale>,
-  //  style: { radius: 10, fillColor: "#74acb8", color: "#555", weight: 1, opacity: 0.8, fillOpacity: 0.5 }
+  //  style: { radius: 10, fillColor: "#74acb8", color: "#555", weight: 1, opacity: 0.5, fillOpacity: 0.5 }
   //  tooltip: false,
   // },
 
@@ -16,6 +16,7 @@ L.BubbleLayer = (L.Layer ? L.Layer : L.Class).extend({
     console.log("initalized: ", options, geojson)
 
     this._geojson = geojson;
+
 
     options.max_radius = options.hasOwnProperty('max_radius') ? options.max_radius : 35;
     options.legend = options.hasOwnProperty('legend') ? options.legend : true;
@@ -34,7 +35,12 @@ L.BubbleLayer = (L.Layer ? L.Layer : L.Class).extend({
   },
 
   addTo: function (map) {
+  try {
     map.addLayer(this);
+  }
+  catch(err) {
+    
+  }
     return this;
   },
 
@@ -47,7 +53,7 @@ L.BubbleLayer = (L.Layer ? L.Layer : L.Class).extend({
     var geoJsonLayer = this.createLayer();
     this._layer = geoJsonLayer;
     map.addLayer(geoJsonLayer);
-
+   
     if (this.options.tooltip) {
       this.showTooltip(geoJsonLayer);
     }
@@ -55,8 +61,25 @@ L.BubbleLayer = (L.Layer ? L.Layer : L.Class).extend({
     if (this.options.legend) {
       this.showLegend(this._scale, this._max);
     }
-
   },
+
+  // onRemove: function(map) {
+
+  //   this._map = map;
+
+  //   // createLayer does the work of visualizing geoJSON as bubbles
+  //   // var geoJsonLayer = this.createLayer();
+  //   // this._layer = geoJsonLayer;
+  //   // map.removeLayer(geoJsonLayer);
+   
+  //   // if (this.options.tooltip) {
+  //   //   this.showTooltip(geoJsonLayer);
+  //   // }
+
+  //   if (this.options.legend) {
+  //     this.removeLayer(this._scale, this._max);
+  //   }
+  // },
 
   createLayer: function(geojson) {
 
@@ -139,7 +162,7 @@ L.BubbleLayer = (L.Layer ? L.Layer : L.Class).extend({
 
     legend.onAdd = function(map) {
       var div = L.DomUtil.create('div', 'info legend');
-      div.innerHTML += '<strong>' + bubbles.options.property + '</strong><br/>';
+      div.innerHTML += '<strong>' + 'Magnitude' + '</strong><br/>';
       div.style = 'background-color: #FFF; padding: 8px; font-size: 14px; text-transform: capitalize'
 
       for (var i = 3; i > 0; i--) {
