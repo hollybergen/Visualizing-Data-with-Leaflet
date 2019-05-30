@@ -50,7 +50,7 @@ var boundaries = L.geoJSON(boundary_lines, {
   "weight": 5,
   "opacity": 0.8,
   style: function(features) {
-    console.log("Plate = " + features.properties.PlateA);
+    //console.log("Plate = " + features.properties.PlateA);
     return {"color": plates_colors[features.properties.PlateA]};
   }
 });
@@ -68,56 +68,9 @@ var baseMaps = {
 };
 
 var overlayMaps = {
-  "Magnitude": bubbles,
+  //"Magnitude": bubbles,
   "Fault Lines": boundaries
 }
 
 L.control.layers(baseMaps, overlayMaps).addTo(map);
 
-
-
-
-
-
-
-
-
-
-
-
-// map.on('overlayadd', function (eventLayer) {
-//   // Switch to the Permafrost legend...
-//   if (eventLayer.name === 'Magnitude') {
-//       this.removeLayer(bubble);
-//       // legend2.addTo(this);
-//   // } else { // Or switch to the treeline legend...
-//   //     this.removeControl(legend2);
-//   //     legend1.addTo(this);
-//   // }
-//   };
-// });
-
-// var popuLegend = L.control(baseMaps, overlayMaps);
-
-// map.on('overlayadd', function(eventLayer){
-//   if (eventLayer.name === 'Magnitude'){
-//       map.addControl(popuLegend);
-//       console.log("Add Control")
-//   } 
-// });
-
-// var popuLegend = L.control(baseMaps, overlayMaps);
-
-// map.on('overlayremove', function(eventLayer){
-//   if (eventLayer.name === 'Magnitude'){
-//        map.removeControl(popuLegend);
-//        console.log("Remove Control")
-//       //  map.addLayer("Magnitude")
-//        map.removeLayer(bubbles);
-//       //  if (this.options.legend) {
-//       //    console.log("if remove");
-//       //   this.removeLayer(this._scale, this._max);
-//       //   }
-//       } 
-
-// });

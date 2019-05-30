@@ -1,15 +1,6 @@
 'use strict';
 
 L.BubbleLayer = (L.Layer ? L.Layer : L.Class).extend({
-  // options: {
-  //  property: REQUIRED,
-
-  //  legend : true,
-  //  max_radius: 40,
-  //  scale: <chroma-js color scale>,
-  //  style: { radius: 10, fillColor: "#74acb8", color: "#555", weight: 1, opacity: 0.5, fillOpacity: 0.5 }
-  //  tooltip: false,
-  // },
 
   initialize: function (geojson, options) {
 
@@ -62,24 +53,6 @@ L.BubbleLayer = (L.Layer ? L.Layer : L.Class).extend({
       this.showLegend(this._scale, this._max);
     }
   },
-
-  // onRemove: function(map) {
-
-  //   this._map = map;
-
-  //   // createLayer does the work of visualizing geoJSON as bubbles
-  //   // var geoJsonLayer = this.createLayer();
-  //   // this._layer = geoJsonLayer;
-  //   // map.removeLayer(geoJsonLayer);
-   
-  //   // if (this.options.tooltip) {
-  //   //   this.showTooltip(geoJsonLayer);
-  //   // }
-
-  //   if (this.options.legend) {
-  //     this.removeLayer(this._scale, this._max);
-  //   }
-  // },
 
   createLayer: function(geojson) {
 
@@ -136,14 +109,6 @@ L.BubbleLayer = (L.Layer ? L.Layer : L.Class).extend({
     })
   },
 
-
-  onRemove: function (map) {
-    this._map = map;
-    // Handle the native remove from map function
-    map.removeLayer(this._layer);
-
-  },
-
   showLegend: function(scale, max){
 
     var legend = L.control({position: 'bottomright'});
@@ -160,10 +125,11 @@ L.BubbleLayer = (L.Layer ? L.Layer : L.Class).extend({
       fill_scale = chroma.scale(this.options.scale);
     }
 
+       
     legend.onAdd = function(map) {
       var div = L.DomUtil.create('div', 'info legend');
       div.innerHTML += '<strong>' + 'Magnitude' + '</strong><br/>';
-      div.style = 'background-color: #FFF; padding: 8px; font-size: 14px; text-transform: capitalize'
+      div.style = 'background-color: #FFF; padding: 8px; font-size: 14px; opacity: .8; text-transform: capitalize'
 
       for (var i = 3; i > 0; i--) {
 
@@ -185,11 +151,11 @@ L.BubbleLayer = (L.Layer ? L.Layer : L.Class).extend({
 
       return div;
 
-
     },
 
+
     // Add this one (only) for now, as the Population layer is on by default
-    //legend.addTo(map);
+    legend.addTo(map);
   },
 
   showTooltip: function(layer){
@@ -240,6 +206,7 @@ L.BubbleLayer = (L.Layer ? L.Layer : L.Class).extend({
   }
 
 });
+
 
 L.bubbleLayer = function (latlngs, options) {
 
